@@ -15,6 +15,7 @@ This project involves creating a PHP web application that uses the Vigenère cip
 3.  **Implement AJAX Submission:** Use AJAX to submit the form and display the results without a page reload.
 4.  **Implement File Saving:** Save the encrypted or decrypted text to a file with a unique name.
 5.  **Update Memory Bank:** Keep track of design decisions, system patterns, and progress in the memory bank.
+6.  **Improve the User Interface:** Add features to enhance the user experience, such as a progress bar, a preview of the encrypted/decrypted text, and the ability to copy the result to the clipboard.
 
 ## PHP Application Structure
 
@@ -50,3 +51,4 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 *   Implemented AJAX form submission for a better user experience.
 *   Created a mode switch for encryption and decryption.
 *   Updated the memory bank to track design decisions and progress.
+*   Planned to improve the user interface with additional features.

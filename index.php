@@ -76,6 +76,19 @@
         .mode-switch button.active {
             background-color: #1565C0;
         }
+        .copy-button {
+            background-color: #607D8B;
+            margin-top: 10px;
+        }
+        .copy-button:hover {
+            background-color: #546E7A;
+        }
+        .copy-success {
+            color: #4CAF50;
+            margin-top: 5px;
+            font-size: 0.9em;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -108,6 +121,10 @@
         <div id="resultContent" class="hidden">
             <h4 id="resultLabel">Encrypted Text:</h4>
             <p id="resultText"></p>
+            <button id="copyButton" class="copy-button" onclick="copyToClipboard()">
+                Copy to Clipboard
+            </button>
+            <p id="copySuccess" class="copy-success">Copied to clipboard!</p>
             <h4>Saved to File:</h4>
             <p id="filename"></p>
         </div>
@@ -141,6 +158,20 @@
                 document.getElementById('result').className = 'result hidden';
             });
         });
+
+        // Copy to clipboard function
+        function copyToClipboard() {
+            const resultText = document.getElementById('resultText').textContent;
+            navigator.clipboard.writeText(resultText).then(() => {
+                const copySuccess = document.getElementById('copySuccess');
+                copySuccess.style.display = 'block';
+                setTimeout(() => {
+                    copySuccess.style.display = 'none';
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy text: ', err);
+            });
+        }
 
         // Form submission
         document.getElementById('cipherForm').addEventListener('submit', function(e) {

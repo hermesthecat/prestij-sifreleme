@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vigenère Cipher Encryption</title>
+    <title>Vigenère Cipher</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -36,9 +36,14 @@
             border: none;
             border-radius: 4px;
             cursor: pointer;
+            margin-right: 10px;
         }
         button:hover {
             background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
         }
         .result {
             margin-top: 20px;
@@ -58,79 +63,131 @@
         .hidden {
             display: none;
         }
+        .mode-switch {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .mode-switch button {
+            background-color: #2196F3;
+        }
+        .mode-switch button:hover {
+            background-color: #1976D2;
+        }
+        .mode-switch button.active {
+            background-color: #1565C0;
+        }
     </style>
 </head>
 <body>
-    <h1>Vigenère Cipher Encryption</h1>
-    <form id="encryptForm">
+    <h1>Vigenère Cipher</h1>
+    
+    <div class="mode-switch">
+        <button type="button" data-mode="encrypt" class="active">Encryption Mode</button>
+        <button type="button" data-mode="decrypt">Decryption Mode</button>
+    </div>
+
+    <form id="cipherForm">
+        <input type="hidden" id="mode" name="mode" value="encrypt">
+        
         <div class="form-group">
-            <label for="key">Encryption Key:</label>
-            <input type="text" id="key" name="key" required placeholder="Enter your encryption key">
+            <label for="key">Key:</label>
+            <input type="text" id="key" name="key" required placeholder="Enter your encryption/decryption key">
         </div>
+        
         <div class="form-group">
-            <label for="plaintext">Text to Encrypt:</label>
-            <textarea id="plaintext" name="plaintext" required placeholder="Enter the text you want to encrypt"></textarea>
+            <label for="text" id="textLabel">Text to Encrypt:</label>
+            <textarea id="text" name="text" required placeholder="Enter the text"></textarea>
         </div>
-        <button type="submit">Encrypt and Save</button>
+        
+        <button type="submit" id="submitBtn">Encrypt Text</button>
     </form>
+
     <div id="result" class="result hidden">
         <h3>Result:</h3>
         <p id="message"></p>
-        <div id="encryptedContent" class="hidden">
-            <h4>Encrypted Text:</h4>
-            <p id="encryptedText"></p>
+        <div id="resultContent" class="hidden">
+            <h4 id="resultLabel">Encrypted Text:</h4>
+            <p id="resultText"></p>
             <h4>Saved to File:</h4>
             <p id="filename"></p>
         </div>
     </div>
 
     <script>
-        document.getElementById('encryptForm').addEventListener('submit', function(e) {
+        // Mode switching
+        const modeSwitchButtons = document.querySelectorAll('.mode-switch button');
+        const modeInput = document.getElementById('mode');
+        const textLabel = document.getElementById('textLabel');
+        const submitBtn = document.getElementById('submitBtn');
+        const resultLabel = document.getElementById('resultLabel');
+
+        modeSwitchButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Update active button
+                modeSwitchButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+
+                // Update mode
+                const mode = this.dataset.mode;
+                modeInput.value = mode;
+
+                // Update labels
+                textLabel.textContent = mode === 'encrypt' ? 'Text to Encrypt:' : 'Text to Decrypt:';
+                submitBtn.textContent = mode === 'encrypt' ? 'Encrypt Text' : 'Decrypt Text';
+                resultLabel.textContent = mode === 'encrypt' ? 'Encrypted Text:' : 'Decrypted Text:';
+
+                // Clear form and results
+                document.getElementById('cipherForm').reset();
+                document.getElementById('result').className = 'result hidden';
+            });
+        });
+
+        // Form submission
+        document.getElementById('cipherForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
             // Get form data
             const formData = new FormData(this);
             
             // Disable submit button while processing
-            const submitButton = this.querySelector('button[type="submit"]');
-            submitButton.disabled = true;
-            submitButton.textContent = 'Encrypting...';
+            submitBtn.disabled = true;
+            submitBtn.textContent = formData.get('mode') === 'encrypt' ? 'Encrypting...' : 'Decrypting...';
             
             // Clear previous results
             const resultDiv = document.getElementById('result');
             const messageP = document.getElementById('message');
-            const encryptedContent = document.getElementById('encryptedContent');
+            const resultContent = document.getElementById('resultContent');
             resultDiv.className = 'result hidden';
             messageP.textContent = '';
-            encryptedContent.className = 'hidden';
+            resultContent.className = 'hidden';
             
             // Send AJAX request
-            fetch('encrypt.php', {
+            fetch('cipher.php', {
                 method: 'POST',
                 body: formData
             })
             .then(response => response.json())
             .then(data => {
                 // Enable submit button
-                submitButton.disabled = false;
-                submitButton.textContent = 'Encrypt and Save';
+                submitBtn.disabled = false;
+                submitBtn.textContent = formData.get('mode') === 'encrypt' ? 'Encrypt Text' : 'Decrypt Text';
                 
                 // Show result
                 resultDiv.className = `result ${data.success ? 'success' : 'error'}`;
                 resultDiv.classList.remove('hidden');
                 messageP.textContent = data.message;
                 
-                // If successful, show encrypted content
+                // If successful, show result content
                 if (data.success) {
-                    encryptedContent.classList.remove('hidden');
-                    document.getElementById('encryptedText').textContent = data.encrypted_text;
+                    resultContent.classList.remove('hidden');
+                    document.getElementById('resultText').textContent = data.result_text;
                     document.getElementById('filename').textContent = data.filename;
                 }
             })
             .catch(error => {
                 // Enable submit button
-                submitButton.disabled = false;
-                submitButton.textContent = 'Encrypt and Save';
+                submitBtn.disabled = false;
+                submitBtn.textContent = formData.get('mode') === 'encrypt' ? 'Encrypt Text' : 'Decrypt Text';
                 
                 // Show error
                 resultDiv.className = 'result error';
